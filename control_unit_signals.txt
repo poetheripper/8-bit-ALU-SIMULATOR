@@ -1,4 +1,4 @@
-C0 - initializeaza ce e de initializat + is de pe inbus M
+C0 - initializeaza ce e de initializat + ia de pe inbus M
 C1 - ia de pe inbus Q
 C2 - A + M
 C3 - A + (-M) - basically aduna cu M in C2 (foloseste XOR la intrare in adder)
