@@ -17,3 +17,5 @@ C13 - incrementeaza Q' pentru corectie
 C14 - shifteaza de CNT1 (k) ori restul la finalul operatiei de impartire
 C15 - semnal de selectie pentru multiplexoare --> selecteaza Q si (-Q') ca input-uri ale adder-ului
 
+sa fim sanatoase!
+
