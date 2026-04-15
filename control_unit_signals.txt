@@ -1,0 +1,19 @@
+C0 - initializeaza ce e de initializat + is de pe inbus M
+C1 - ia de pe inbus Q
+C2 - A + M
+C3 - A + (-M) - basically aduna cu M in C2 (foloseste XOR la intrare in adder)
+C4 - shiftare la dreapta pentru inmultire, la shiftare se pastreaza semnul - meaning pt numerele pozitive -> 0 / negative -> 1
+C5 - incrementare CNT_M
+C6 - scuipa pe outbus A final
+C7 - pune pe outbus Q final
+
+STR 2 signals
+C8 - face left shift CNT1(k) pozitii --> pana M[7] = 1
+C9 - face left shift pentru A concatenat cu Q, shifteaza la stanga Q', Q'[0] =0 si Q[0] = 0
+C10 - pune Q[0] pe 1
+C11 - pune Q'[0] pe 1
+C12 - incrementeaza CNT2 pana cand ajunge la 7 (pasii impartirii)
+C13 - incrementeaza Q' pentru corectie 
+C14 - shifteaza de CNT1 (k) ori restul la finalul operatiei de impartire
+C15 - semnal de selectie pentru multiplexoare --> selecteaza Q si (-Q') ca input-uri ale adder-ului
+
