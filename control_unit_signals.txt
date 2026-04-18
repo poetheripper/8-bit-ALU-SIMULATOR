@@ -3,7 +3,7 @@ C1 - ia de pe inbus Q
 C2 - A + M
 C3 - A + (-M) - basically aduna cu M in C2 (foloseste XOR la intrare in adder)
 C4 - shiftare la dreapta pentru inmultire, la shiftare se pastreaza semnul - meaning pt numerele pozitive -> 0 / negative -> 1
-C5 - incrementare CNT_M
+C5 - incrementare CNT1
 C6 - scuipa pe outbus A final
 C7 - pune pe outbus Q final
 
