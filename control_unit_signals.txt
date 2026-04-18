@@ -18,5 +18,9 @@ C14 - shifteaza de CNT1 (k) ori restul la finalul operatiei de impartire
 C15 - semnal de selectie pentru multiplexoare --> selecteaza Q si (-Q') ca input-uri ale adder-ului
 C16 - semnal pentru selectie M si Q la adunarea simpla 
 
+ACTIVARE SEMNAL PT ADD/SUBSTR:
+addition -> C15, C2, C16
+subtraction -> C15, C2, C16 si C3 (pentru complement de 2)
+
 sa fim sanatoase!
 
