@@ -16,6 +16,7 @@ C12 - incrementeaza CNT2 pana cand ajunge la 7 (pasii impartirii)
 C13 - incrementeaza Q' pentru corectie 
 C14 - shifteaza de CNT1 (k) ori restul la finalul operatiei de impartire
 C15 - semnal de selectie pentru multiplexoare --> selecteaza Q si (-Q') ca input-uri ale adder-ului
+C16 - semnal pentru selectie M si Q la adunarea simpla 
 
 sa fim sanatoase!
 
