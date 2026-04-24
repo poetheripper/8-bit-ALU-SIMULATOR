@@ -24,9 +24,9 @@ subtraction -> C15, C2, C16 si C3 (pentru complement de 2)
 
 sa fim sanatoase!
 
-A + M - C2
-A - M - C2, C3
-Q + M - C2, C15, C16
-Q - M - C2, C3, C15, C16
-Q'+ 1 - C13, C16
-Q - Q'- C2, C3, C15
+A + M - C2 - adunare simpla
+A - M - C2, C3 - scadere simpla
+Q + M - C2, C15 - adunare + selectie input si output adder Q
+Q - M - C2, C3, C15 - scadere + selectie input si output adder Q
+Q'+ 1 - C13, C16 - selectie 1 si selectie Q' la adder (input si output)
+Q - Q'- C2, C3, C15, C16 - scadere + selectie input + output Q si selectie Q' la a doua intrare din adder
