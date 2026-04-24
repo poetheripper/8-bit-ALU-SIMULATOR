@@ -7,28 +7,36 @@ module control_unit (
     input  [2:0] cnt2,      // Presupunem 3 biti pt a numara pana la 7
     input        M7,        // Bitul de semn al lui M
     input        A8,        // Bitul de semn al lui A (inlocuieste nevoia de a sparge bus-ul aiurea)
-    input  [1:0] Q_lo,      // Q[1:0] pentru Booth (daca e nevoie)
-    input        q_minus_1, // Q[-1] redenumit corect sintactic
+    input        A7,
+    input        A6,
+    input  	 Q_0,      // Q[1:0] pentru Booth (daca e nevoie)
+    input        Q_minus_1, // Q[-1] redenumit corect sintactic
     input  [1:0] op,        // 00-add, 01-sub, 10-mul, 11-div
     // Semnale de control (C1..C15, plus C0 pe care l-ai definit in cod)
     output reg C0, C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16
 );
 
-    // Codificarea Starilor (S0 -> S11)
-    localparam S0  = 4'd0,
-               S1  = 4'd1,
-               S2  = 4'd2,
-               S3  = 4'd3,
-               S4  = 4'd4,
-               S5  = 4'd5,
-               S6  = 4'd6,
-               S7  = 4'd7,
-               S8  = 4'd8,
-               S9  = 4'd9,
-               S10 = 4'd10,
-               S11 = 4'd11;
+    // Codificarea Starilor (S0 -> S15)
+    localparam S0  = 5'd0,
+               S1  = 5'd1,
+               S2  = 5'd2,
+               S3  = 5'd3,
+               S4  = 5'd4,
+               S5  = 5'd5,
+               S6  = 5'd6,
+               S7  = 5'd7,
+               S8  = 5'd8,
+               S9  = 5'd9,
+               S10 = 5'd10,
+               S11 = 5'd11,
+	       S12 = 5'd12,
+	       S13 = 5'd13,
+	       S14 = 5'd14,
+	       S15 = 5'd15,
+	       S16 = 5'd16;
 
-    reg [3:0] state, next_state;
+    reg [4:0] state, next_state;
+    reg corectie = 1'b0;
 
     // 1. Registrul de Stare (Secvential)
     always @(posedge clk or negedge Reset) begin
@@ -51,113 +59,156 @@ module control_unit (
             end
 
             S1: begin
-                // In S1 facem Load/Init conform intentiei tale initiale
-                C0 = 1'b1; // Load M (presupunere din codul tau)
-                C1 = 1'b1; // Load Q (presupunere din codul tau)
-                
-                case (op)
-                    2'b00: next_state = S2;  // ADD
-                    2'b01: next_state = S4;  // SUB
-                    2'b10: next_state = S5;  // MUL
-                    2'b11: next_state = S6;  // DIV
-                endcase
+                C0 = 1'b1; // Load M 
+		next_state = S2;
             end
-
-            // --- ADUNARE ---
+            
             S2: begin
-                C2 = 1'b1; // Comanda adunarea
-		C15 = 1'b1; // Selectie Q
-		C16 = 1'b1; // Selectie M
-                next_state = S3;
+		C1 = 1'b1; // Load Q
+		next_state = S3;
             end
 
-            // --- SCADERE ---
-            S4: begin
+	    S3: begin
+                case (op)
+                    2'b00: next_state = S4;  // Adunare
+                    2'b01: next_state = S5;  // Scadere
+                    2'b10: next_state = S6;  // Inmultire
+                    2'b11: next_state = S10;  // Impartire
+                endcase
+	    end
+	
+
+	    // Adunare
+	    S4: begin
+                C2 = 1'b1; // Comanda adunarea
+		if (corectie == 1'b1)begin
+			next_state = S15;
+		end else if (op == 2'b10) begin               
+			next_state = S7; // merge inapoi in algoritmul de inmultire
+		end else if(op == 2'b11)begin
+			next_state = S12; // face adunarea si merge sa verifice cnt2 in S12 - impartire
+                end else begin
+			C15 = 1'b1;
+			next_state = S8; // outbus A;
+		end
+	    end
+
+            // Scadere
+            S5: begin
 		C2 = 1'b1; // Comanda adunare
                 C3 = 1'b1; // Comanda scaderea (Seteaza c_in = 1 si mux-ul lui M in ~M)
-		C15 = 1'b1; // Selectie Q
-		C16 = 1'b1; // Selectie M
-                next_state = S3;
-            end
 
-            // --- INMULTIRE (Booth) ---
-            S5: begin
-                // Aici va trebui sa adaugi logica pentru cei 8 pasi de inmultire Booth.
-                // Diagrama ta de st?ri face salt direct S5 -> S3, ceea ce inseamna ca 
-                // lipseste o bucla (un loop conditionat de CNT1) in diagrama desenata.
-                // Exemplu sumar (trebuie adaptat dupa cum activezi semnalele de add/sub/shift):
-                
-                C4 = 1'b1; // Shiftare la dreapta
-                C5 = 1'b1; // Incrementare CNT1
-
-                if (cnt1 == 3'd7) begin
-                    next_state = S3;
+		if (op == 2'b10) begin               
+			next_state = S7; // merge inapoi in algoritmul de inmultire
+                end else if( op == 2'b11) begin
+			next_state = S12; // merge inapoi in algoritmul de impartire
                 end else begin
-                    next_state = S5; // Ramane in bucla pana cand cnt1 ajunge la 7
-                end
+			C15 = 1'b1;
+			next_state = S8; // outbus A;
+		end
             end
 
-            // --- IMPARTIRE ---
-            S6: begin
-                // Initializare pt impartire
-                if (M7 == 1'b0) next_state = S7;
-                else next_state = S3; // Ce se intampla daca impartitorul e negativ? Diagrama ta nu arata.
+            // Inmultire - Booth radix-2
+            S6: begin   
+		case({Q_0, Q_minus_1})
+			2'b01: next_state = S4;
+			2'b10: next_state = S5;
+			default: next_state = S7;
+		endcase
             end
 
-            S7: begin
-                // Aliniere stanga pana cand M[7] == 1
-                if (M7 == 1'b0) begin
-                    C8 = 1'b1; // Shift left M (sau ce face C8 exact)
-                    C9 = 1'b1; // Shift left AQ
-                    next_state = S7; // Bucla
-                end else begin
-                    next_state = S8;
-                end
-            end
+            // stare pentru shiftare si incrementare cnt1 dupa adunare/scadere la inmultire
+            S7: begin	
+                C4 = 1'b1; // right shift
 
-            S8: begin
-                // Baza algoritmului de impartire (Sub/Add si Shift)
-                C12 = 1'b1; // Increment CNT2
-                
-                if (cnt2 < 3'd7) begin
-                    next_state = S8; // Ramane in bucla
-                end else begin
-                    next_state = S9;
-                end
-            end
-
-            S9: begin
-                if (cnt2 == 3'd7 && A8 == 1'b1) begin
-                    C13 = 1'b1; // Corectie Q' (din codul tau)
-                    next_state = S10;
-                end else begin
-                    next_state = S10;
-                end
+		if(cnt1 == 3'd7) begin
+			next_state = S8;
+		end else begin
+			C5 = 1'b1; // incrementare cnt1
+			next_state = S6;
+		end
             end
 
             S10: begin
-                // Corectie / Shiftare rest la final
-                if (cnt1 != 3'd0) begin
-                    C14 = 1'b1; // Shift inapoi restul
-                    // C15 = 1'b1; // Logica ta zicea si de C15
-                    next_state = S10; // Bucla
-                end else begin
-                    next_state = S11;
-                end
+                if(M7 == 1'b0) begin
+			C8 = 1'b1; // incrementare cnt1 la shiftare stanga k biti + shiftare 
+			next_state = S10;
+		end else begin
+			next_state = S11;
+		end
+            end
+		
+	    // aici se testeaza cei mai semnificativi 3 biti ai lui A
+            S11: begin
+		C9 = 1'b1; // se baga la tata lumea
+                if(A8 == A7 && A7 == A6) begin
+			next_state = S12;
+		end else if(A8 == 1'b0) begin
+			C10 = 1'b1;
+			next_state = S5; // scadere A - M
+		end else begin
+			C11 = 1'b1;
+			next_state = S4; // adunare A + M
+		end
             end
 
-            S11: begin
-                next_state = S3;
-            end
+	    S12: begin
+		if(cnt2 == 3'd7) begin
+			next_state = S13;
+		end else begin
+			C12 = 1'b1; // incrementare cnt2
+			next_state = S11;
+		end
+	    end
+
+	    S13: begin
+		if(A8 == 1'b1) begin
+			next_state = S14; // corectie
+		end else begin
+			next_state = S15;
+		end
+	    end
+
+	    // stare pentru corectie
+	    S14: begin
+		// partea asta incrementeaza Q', doar atat!!!!
+		C13 = 1'b1; // selecteaza Q'
+		C16 = 1'b1; // selecteaza 1
+		C2 = 1'b1;
+		corectie = 1'b1;
+		// asta aduna A + M
+		next_state = S4;
+	    end
+
+	    S15: begin
+		if(cnt1 == 1'd0) begin
+			next_state = S16;
+		end else begin
+			// shifteaza A la dreapta - pune biti de 0
+			C14 = 1'b1; // decrementeaza cnt1 la shiftare dreapta cu k biti 
+			next_state = S15;
+		end
+	    end
+	   
+    	    // Q - Q'
+	    S16: begin
+		C2 = 1'b1;
+		C3 = 1'b1;
+		C15 = 1'b1;
+		C16 = 1'b1;
+		next_state = S8;
+	    end
 
             // --- DONE ---
-            S3: begin
-                // Aici ALU isi termina treaba. 
-                // Asteapta ca semnalul BEGIN sa cada pe 0 pentru a se intoarce in S0.
+            S8: begin
 		C6 = 1'b1; // trimite rezultatul din A pe outbus
+		next_state = S9;
+            end
+
+	    S9: begin
 		C7 = 1'b1; // trimite rezultatul din Q pe outbus
                 if (!Begin) next_state = S0;
-            end
+	    end
 
             default: next_state = S0;
         endcase
