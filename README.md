@@ -6,7 +6,7 @@ You will design and simulate an 8-bit Arithmetic Logic Unit (ALU) using a Hardwa
 
   Cristescu Ioana-Maria
   Moisi Andreea-Maria
-  2nd year, Upt
+  - 2nd year, Upt
   
 # Project Requirements
 
