@@ -10,37 +10,33 @@
 
 module ALU_Top (
     input wire clk,
-    input wire reset,         // Asincron, activ in LOW (0 = reset)
-    input wire begin_op,      // Impuls de start
+    input wire reset,         
+    input wire begin_op,      
     input wire [1:0] op,      // 00=ADD, 01=SUB, 10=MUL, 11=DIV
-    input wire [7:0] inbus,   // Magistrala de intrare date
-    output wire [7:0] outbus  // Magistrala de iesire date
+    input wire [7:0] inbus,   //intrare date
+    output wire [7:0] outbus  //iesire date
 );
 
-    // ==========================================
-    // 1. Iesirile din Registrele de Shiftare
-    // ==========================================
+    //Iesirile din Registrele de Shiftare
     wire [8:0] A_out;
     wire [7:0] Q_out;
     wire [7:0] Q_prim_out;
     wire [8:0] M_out;
     
-    // Semnale auxiliare (flip-flop simplu pt Booth si contoare)
+	//contoare + Q[-1]
     reg       Q_m1;       
     wire [2:0] cnt1;       
     wire [2:0] cnt2;       
 
-    // ==========================================
-    // 2. Semnale Control Unit & Adder
-    // ==========================================
+
+    //Semnale Control Unit & Adder
+
     wire C0, C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16;
     wire [8:0] adder_in1, adder_in2, xor_input, adder_out;
     wire [8:0] mux1_out;
     wire [8:0] demux1_out1, demux1_out2, demux2_in, demux2_out1, demux2_out2;
 
-    // ==========================================
-    // 3. Instantiere Control Unit & Adder
-    // ==========================================
+    // Instantiere Control Unit & Adder
     control_unit cu_inst (
         .clk(clk), .Begin(begin_op), .Reset(reset),
         .cnt1(cnt1), .cnt2(cnt2), .M7(M_out[7]), .A8(A_out[8]), .A7(A_out[7]), .A6(A_out[6]),
@@ -72,9 +68,7 @@ module ALU_Top (
 
     up_down_counter_3bit inst_cnt2 (.clk(clk), .reset_n(reset), .clr(C0), .en(cnt2_en), .mode(cnt2_mode), .count(cnt2));
 
-    // ==========================================
-    // 4. Logica de control a intrarilor pentru Shift Registers
-    // ==========================================
+    //Logica de control a intrarilor pentru Shift Registers
     reg [8:0] A_d; 
     reg [7:0] Q_d;  
     reg [7:0] Q_prim_d; 
@@ -87,18 +81,18 @@ module ALU_Top (
 
 
     always @(*) begin
-        // Valorile DEFAULT: Toate registrele isi fac HOLD (Load propria iesire)
+       
         A_sh_ld = 1'b1;  A_d = A_out;       
         Q_sh_ld = 1'b1;  Q_d = Q_out;       
         Q_prim_sh_ld = 1'b1;  Q_prim_d = Q_prim_out; 
         M_sh_ld = 1'b1;  M_d = M_out;      
 
         if (!reset) begin
-            // Reset asincron simulat prin fortarea intrarii D la 0 pe Load
+            // Reset asincron 
             A_d = 9'b0; Q_d = 8'b0; Q_prim_d = 8'b0; M_d = 9'b0;
         end else begin
             
-            // --- Logica Registrelor ---
+          
             if (C0) begin
                 A_d = 9'b0; // Initializeaza
 		Q_prim_d = 8'b0;
@@ -143,9 +137,8 @@ module ALU_Top (
     end
 
 
-    // ==========================================
-    // 5. Instantierea Registrelor Speciale
-    // ==========================================
+
+    //Instantierea Registrelor Speciale
 
     u_reg #(.N(9)) reg_A (
         .clk(clk), .l_r(A_l_r), .sh_ld(A_sh_ld), .sr(A_sr_in), .sl(A_sl_in), .d(A_d), .q(A_out)
@@ -163,9 +156,7 @@ module ALU_Top (
         .clk(clk), .l_r(M_l_r), .sh_ld(M_sh_ld), .sr(M_sr_in), .sl(M_sl_in), .d(M_d), .q(M_out)
     );
 
-    // ==========================================
-    // 6. Contoare si Q[-1] (Nu au nevoie de u_shift_reg)
-    // ==========================================
+    //Contoare si Q[-1] 
     always @(posedge clk or negedge reset) begin
         if (!reset) begin
             Q_m1 <= 1'b0;
@@ -175,9 +166,7 @@ module ALU_Top (
         end
     end
 
-    // ==========================================
-    // 7. Magistrala de Iesire
-    // ==========================================
+    //Iesire
     assign outbus = (C6) ? A_out[7:0] : 
                     (C7) ? Q_out[7:0] : 
                     8'bZZZZZZZZ;
