@@ -1,10 +1,10 @@
-C0 - initializeaza ce e de initializat + ia de pe inbus M
-C1 - ia de pe inbus Q
+C0 - initializeaza A,Q',Q[-1],cnt1,cnt2 si aduce de pe inbus M
+C1 - aduce de pe inbus Q
 C2 - A + M
-C3 - A + (-M) - basically aduna cu M in C2 (foloseste XOR la intrare in adder)
-C4 - shiftare la dreapta pentru inmultire, la shiftare se pastreaza semnul - meaning pt numerele pozitive -> 0 / negative -> 1
+C3 - A + (-M) - aduna cu M in C2 (foloseste XOR la intrare in adder)
+C4 - shiftare la dreapta pentru inmultire, la shiftare se pastreaza semnul (numerele pozitive -> 0 / negative -> 1)
 C5 - incrementare CNT1
-C6 - scuipa pe outbus A final
+C6 - pune pe outbus A final
 C7 - pune pe outbus Q final
 
 STR 2 signals
@@ -22,7 +22,6 @@ ACTIVARE SEMNAL PT ADD/SUBSTR:
 addition -> C15, C2, C16
 subtraction -> C15, C2, C16 si C3 (pentru complement de 2)
 
-sa fim sanatoase!
 
 A + M - C2 - adunare simpla
 A - M - C2, C3 - scadere simpla
