@@ -9,6 +9,7 @@ module ALU_Top_tb();
     reg [7:0] inbus;
     
     wire [7:0] outbus;
+    reg [15:0] mul_result;
 
     // 1. Instantierea Modulului Principal
     ALU_Top uut (
@@ -65,10 +66,19 @@ module ALU_Top_tb();
     // MONITORIZARE OUTBUS (Iesirea datelor)
     // ========================================================
     always @(posedge clk) begin
-        if (uut.C6) 
-            $display("   [OUTBUS] Rezultat A = %d (bin: %b)", $signed(outbus), outbus);
-        if (uut.C7) 
-            $display("   [OUTBUS] Rezultat Q = %d (bin: %b)", $signed(outbus), outbus);
+        if (uut.C6) begin
+		if(uut.op == 2'b10)
+			mul_result[15:8] = outbus;
+		else 
+            		$display("   [OUTBUS] Rezultat A = %d (bin: %b)", $signed(outbus), outbus);
+	end
+        if (uut.C7) begin
+		if(uut.op == 2'b10) begin	
+			mul_result[7:0] = outbus;
+			$display("   [OUTBUS] Rezultat AQ = %d (bin: %b)", $signed(mul_result), mul_result);
+		end else 
+            		$display("   [OUTBUS] Rezultat Q = %d (bin: %b)", $signed(outbus), outbus);
+	end
     end
 
     // ========================================================
@@ -85,7 +95,7 @@ module ALU_Top_tb();
         run_operation(2'b00, 8'd15, 8'd10, "ADUNARE (15 + 10)");
         
         // 2. SCADERE
-        run_operation(2'b01, 8'd15, 8'd20, "SCADERE (15 - 20)");
+        run_operation(2'b01, 8'd20, 8'd15, "SCADERE (15 - 20)");
 
         // 3. INMULTIRE BOOTH
         run_operation(2'b10, 8'd7, -8'd3, "INMULTIRE BOOTH (7 * -3)");
@@ -110,5 +120,5 @@ module ALU_Top_tb();
         $display("=======================================================\n");
         $finish;
     end
- 
+
 endmodule 
