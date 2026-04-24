@@ -2,7 +2,6 @@
 
 module control_unit_tb();
 
-    //Declarare reg
     reg clk;
     reg Begin;
     reg Reset;
@@ -11,7 +10,7 @@ module control_unit_tb();
     reg M7, A8, A7, A6, Q_0, Q_minus_1;
     reg [1:0] op;
 
-    //Declarare wire pentru semnale de control
+    // Semnalele de control generate de modul
     wire C0, C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16;
 
     //Instantiere control unit
@@ -70,10 +69,9 @@ module control_unit_tb();
         Begin = 1;   
         #10 Begin = 0; 
 
-        //asteptam 8 cc ca sa parcurgem starile S1->S2->S3->S4->S8->S9->S0
         #80;
 
-        // TEST2: Subtraction (op = 01)
+        // Scadere (op = 01)
         $display("Time: %0t | [TEST 2] Incepe Scaderea", $time);
         op = 2'b01;
         Begin = 1;
@@ -82,7 +80,7 @@ module control_unit_tb();
         //8 cc
         #80;
 
-        //TEST3: Inmultire (op = 10)
+        // Inmultire (op = 10)
         $display("Time: %0t | [TEST 3] Incepe Inmultirea op", $time);
         op = 2'b10;
         Q_0 = 1; Q_minus_1 = 0; //mergem in S5(scadere) in interiorul lui S6
@@ -92,10 +90,9 @@ module control_unit_tb();
         Begin = 1;
         #10 Begin = 0;
 
-        //asteptam cei 7 pasi 
         #300;
 
-        //TEST4: Impartire (op = 11) 
+        // Impartire (op = 11) 
         $display("Time: %0t | [TEST 4] Starting DIV operation...", $time);
         op = 2'b11;
         
@@ -111,9 +108,8 @@ module control_unit_tb();
         #40;
         
         $display("Time: %0t | [TEST 4] Punem M[7] ca sa iesim din loop", $time);
-        M7 = 1; // Now it will jump to S11 on the next clock edge!
+        M7 = 1; 
 
-        //aasteptam pana cnt2 ajunge la 7
         #300;
 
         $display("\nTime: %0t | Am terminat", $time);
